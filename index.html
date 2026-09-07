@@ -44,7 +44,7 @@
       --input-bg: #f1f5f9;
     }
 
-    /* ❄️ KIŞ MODU TEMASI (Sadeleştirildi) */
+    /* ❄️ KIŞ MODU TEMASI */
     :root[data-theme="winter"] {
       --bg: #0b132b;
       --card-bg: rgba(28, 37, 65, 0.85);
@@ -77,7 +77,6 @@
       position: relative;
     }
 
-    /* Kar Taneleri Konteyneri */
     #snowContainer {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -104,7 +103,6 @@
       100% { transform: translateY(105vh) rotate(360deg); opacity: 0.2; }
     }
 
-    /* Alt Kar Birikintisi */
     .snow-drift {
       display: none;
       position: fixed;
@@ -149,7 +147,6 @@
       font-size: 1.2rem; cursor: pointer;
     }
 
-    /* Sol Yan Ayarlar Menüsü */
     .drawer-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6);
@@ -176,7 +173,6 @@
     .setting-group { display: flex; flex-direction: column; gap: 0.5rem; }
     .setting-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
 
-    /* Zaman Bazlı Kartlar */
     .time-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
     .time-card {
@@ -189,7 +185,6 @@
     .time-card span { font-size: 0.75rem; color: var(--text-muted); }
     .time-card strong { font-size: 1.1rem; color: var(--primary); }
 
-    /* Bakiye Kartı */
     .balance-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -199,7 +194,6 @@
 
     .balance-card .total { font-size: 2rem; font-weight: 800; color: var(--primary); }
 
-    /* Form */
     .form-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -221,7 +215,6 @@
       border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1rem;
     }
 
-    /* İşlem Listesi */
     .transactions-list { display: flex; flex-direction: column; gap: 0.65rem; }
 
     .transaction-item {
@@ -252,11 +245,9 @@
 </head>
 <body>
 
-  <!-- Kar Efekti Elemanları -->
   <div id="snowContainer"></div>
   <div class="snow-drift"></div>
 
-  <!-- Sol Ayarlar Menüsü -->
   <div class="drawer-overlay" id="overlay"></div>
   <div class="drawer" id="drawer">
     <h2>⚙️ Ayarlar</h2>
@@ -275,7 +266,7 @@
       <label>HAKKIMDA</label>
       <div class="about-box">
         <b>Sedonar Bütçe v2.0</b><br><br>
-        Selam, ben Sedonar! 18 yaşındayım, 2 yıllık elektrik öğrencisiyim bu uygulama sizin aylık harcamalarınızın neden bukadar param gitti? diye sormamanız için yapıldı umarım beğenmişsinizdir bilgileriniz suparbase ile korunakta .
+        Selam, ben Sedonar! 18 yaşındayım, 2 yıllık elektrik öğrencisiyim bu uygulama sizin aylık harcamalarınızın neden bukadar param gitti? diye sormamanız için yapıldı umarım beğenmişsinizdir bilgileriniz Supabase ile korunmakta.
       </div>
     </div>
   </div>
@@ -287,13 +278,11 @@
       <div style="width: 42px;"></div>
     </header>
 
-    <!-- Toplam Bakiye -->
     <div class="balance-card">
       <span style="font-size: 0.85rem; color: var(--text-muted);">Net Bakiye</span>
       <div class="total" id="totalBalance">₺0.00</div>
     </div>
 
-    <!-- Zaman Bazlı Harcama Özetleri -->
     <div class="time-stats-grid">
       <div class="time-card">
         <span>Bu Hafta</span>
@@ -313,7 +302,6 @@
       </div>
     </div>
 
-    <!-- Form -->
     <form class="form-card" id="budgetForm">
       <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required>
       <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required>
@@ -324,15 +312,11 @@
       <button type="submit" class="btn-submit">Kaydet</button>
     </form>
 
-    <!-- Son İşlemler Listesi -->
     <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-top: 0.5rem;">Son İşlemler</div>
-    <div class="transactions-list" id="transactionList">
-      <!-- JavaScript ile buraya eklenecek -->
-    </div>
+    <div class="transactions-list" id="transactionList"></div>
   </div>
 
   <script>
-    // --- VERİ YÖNETİMİ & HESAPLAMA ---
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
 
     const form = document.getElementById('budgetForm');
@@ -347,7 +331,6 @@
     const thisMonthEl = document.getElementById('thisMonthExpense');
     const lastMonthEl = document.getElementById('lastMonthExpense');
 
-    // Tarih Yardımcıları
     function isThisWeek(date) {
       const now = new Date();
       const startOfWeek = new Date(now);
@@ -382,7 +365,6 @@
       return date.getMonth() === lastMonth.getMonth() && date.getFullYear() === lastMonth.getFullYear();
     }
 
-    // Ekranı Güncelleme Fonksiyonu
     function renderApp() {
       let totalBalance = 0;
       let thisWeekGider = 0;
@@ -407,7 +389,6 @@
           if (isLastMonth(tDate)) lastMonthGider += amount;
         }
 
-        // Liste Elemanı
         const item = document.createElement('div');
         item.className = 'transaction-item';
         item.innerHTML = `
@@ -425,7 +406,6 @@
         transactionList.appendChild(item);
       });
 
-      // Kartları Güncelle
       totalBalanceEl.innerText = `₺${totalBalance.toFixed(2)}`;
       thisWeekEl.innerText = `₺${thisWeekGider.toFixed(2)}`;
       lastWeekEl.innerText = `₺${lastWeekGider.toFixed(2)}`;
@@ -435,7 +415,6 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
-    // İşlem Ekleme
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const newTransaction = {
@@ -453,13 +432,11 @@
       amountInput.value = '';
     });
 
-    // İşlem Silme
     window.deleteTransaction = function(id) {
       transactions = transactions.filter(t => t.id !== id);
       renderApp();
     };
 
-    // --- AYARLAR VE TEMA ---
     const openBtn = document.getElementById('openSettings');
     const drawer = document.getElementById('drawer');
     const overlay = document.getElementById('overlay');
@@ -484,7 +461,6 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelect.value = savedTheme;
 
-    // --- KAR TANESİ ÜRETİCİ ---
     const snowContainer = document.getElementById('snowContainer');
     for (let i = 0; i < 30; i++) {
       const flake = document.createElement('div');
@@ -497,7 +473,6 @@
       snowContainer.appendChild(flake);
     }
 
-    // Sayfa Yüklendiğinde Başlat
     renderApp();
   </script>
 </body>
