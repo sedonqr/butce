@@ -129,7 +129,6 @@
 
     .icon-btn:active { transform: scale(0.9); }
 
-    /* Bildirim Toast Mesajı */
     .toast {
       position: fixed;
       top: 15px;
@@ -232,7 +231,6 @@
 </head>
 <body>
 
-  <!-- Toast Bildirimi -->
   <div class="toast" id="toast">✅ Veriler Eşitlendi!</div>
 
   <div id="snowContainer"></div>
@@ -265,9 +263,9 @@
 
   <div class="app-container">
     <header>
-      <button class="icon-btn" id="openSettings" title="Ayarlar">⚙️</button>
+      <button class="icon-btn" id="openSettings" type="button" title="Ayarlar">⚙️</button>
       <h1>Bütçe Takibi</h1>
-      <button class="icon-btn" id="syncBtn" title="Verileri Eşitle">🔄</button>
+      <button class="icon-btn" id="syncBtn" type="button" title="Verileri Eşitle">🔄</button>
     </header>
 
     <div class="balance-card">
@@ -294,9 +292,9 @@
       </div>
     </div>
 
-    <form class="form-card" id="budgetForm">
-      <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required>
-      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required>
+    <form class="form-card" id="budgetForm" onsubmit="return false;">
+      <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required autocomplete="off">
+      <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required autocomplete="off">
       <select id="typeInput">
         <option value="expense">Gider (-)</option>
         <option value="income">Gelir (+)</option>
@@ -309,11 +307,8 @@
   </div>
 
   <script>
-    // --- SUPABASE BİLGİLERİ (URL Otomatik Temizleme) ---
     const RAW_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";
-    
-    // URL'deki fazla /rest/v1/ parçalarını temizleyen güvenli adres
     const SUPABASE_URL = RAW_URL.replace(/\/+$|\/rest\/v1\/?$/, '');
 
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
@@ -412,7 +407,7 @@
             <span class="transaction-amount ${t.type}">
               ${t.type === 'income' ? '+' : '-'}₺${amount.toFixed(2)}
             </span>
-            <button class="btn-delete" onclick="deleteTransaction(${t.id})">🗑️</button>
+            <button class="btn-delete" type="button" onclick="deleteTransaction(${t.id})">🗑️</button>
           </div>
         `;
         transactionList.appendChild(item);
@@ -427,8 +422,7 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
-    // --- SUPABASE VERİ ÇEKME / CİHAZLAR ARASI EŞİTLEME ---
-    async function syncFromSupabase(isManual = false) {
+    async function syncFromSupabase(showNotification = false) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
           headers: {
@@ -441,18 +435,14 @@
           if (Array.isArray(data)) {
             transactions = data;
             renderApp();
-            if (isManual) showToast("✅ Veriler Eşitlendi!");
+            if (showNotification) showToast("✅ Veriler Eşitlendi!");
           }
-        } else {
-          if (isManual) showToast("⚠️ Eşitleme Hatası!");
         }
       } catch (err) {
         console.error('Supabase yükleme hatası:', err);
-        if (isManual) showToast("⚠️ Bağlantı Hatası!");
       }
     }
 
-    // Manuel Eşitle Butonu
     syncBtn.addEventListener('click', async () => {
       syncBtn.style.transform = 'rotate(360deg)';
       syncBtn.style.transition = 'transform 0.6s ease';
@@ -463,13 +453,18 @@
       }, 600);
     });
 
-    // --- İŞLEM EKLEME ---
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const descVal = descInput.value.trim();
+      const amountVal = parseFloat(amountInput.value);
+
+      if (!descVal || isNaN(amountVal)) return;
+
       const newTransaction = {
         id: Date.now(),
-        desc: descInput.value,
-        amount: parseFloat(amountInput.value),
+        desc: descVal,
+        amount: amountVal,
         type: typeInput.value,
         date: new Date().toISOString()
       };
@@ -499,7 +494,6 @@
       }
     });
 
-    // --- İŞLEM SİLME ---
     window.deleteTransaction = async function(id) {
       transactions = transactions.filter(t => t.id !== id);
       renderApp();
@@ -518,7 +512,6 @@
       }
     };
 
-    // --- AYARLAR VE TEMA ---
     const openBtn = document.getElementById('openSettings');
     const drawer = document.getElementById('drawer');
     const overlay = document.getElementById('overlay');
@@ -543,7 +536,6 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelect.value = savedTheme;
 
-    // --- KAR TANESİ ---
     const snowContainer = document.getElementById('snowContainer');
     for (let i = 0; i < 30; i++) {
       const flake = document.createElement('div');
@@ -556,14 +548,13 @@
       snowContainer.appendChild(flake);
     }
 
-    // İlk Açılış
     renderApp();
-    syncFromSupabase();
+    syncFromSupabase(false);
 
-    // Otomatik Eşitleme: Her 10 saniyede bir cihazlar arası veriyi arka planda günceller
-    setInterval(() => {
+    // Uygulamaya her geri dönüldüğünde (sekme değiştiğinde veya telefonda açıldığında) 1 defa verileri tazeler
+    window.addEventListener('focus', () => {
       syncFromSupabase(false);
-    }, 10000);
+    });
   </script>
 </body>
 </html>
