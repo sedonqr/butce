@@ -292,7 +292,7 @@
       </div>
     </div>
 
-    <form class="form-card" id="budgetForm" onsubmit="return false;">
+    <form class="form-card" id="budgetForm">
       <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required autocomplete="off">
       <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required autocomplete="off">
       <select id="typeInput">
@@ -333,40 +333,53 @@
       setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    function isThisWeek(date) {
+    // SAĞLAM TARİH HESAPLAYICILARI
+    function parseDate(dateInput) {
+      if (!dateInput) return new Date();
+      const d = new Date(dateInput);
+      return isNaN(d.getTime()) ? new Date() : d;
+    }
+
+    function isThisWeek(dateInput) {
+      const date = parseDate(dateInput);
       const now = new Date();
-      const day = now.getDay() || 7;
+      const currentDay = now.getDay() || 7;
+
       const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - day + 1);
-      startOfWeek.setHours(0,0,0,0);
+      startOfWeek.setDate(now.getDate() - currentDay + 1);
+      startOfWeek.setHours(0, 0, 0, 0);
 
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23,59,59,999);
+      endOfWeek.setHours(23, 59, 59, 999);
 
       return date >= startOfWeek && date <= endOfWeek;
     }
 
-    function isLastWeek(date) {
+    function isLastWeek(dateInput) {
+      const date = parseDate(dateInput);
       const now = new Date();
-      const day = now.getDay() || 7;
+      const currentDay = now.getDay() || 7;
+
       const startOfLastWeek = new Date(now);
-      startOfLastWeek.setDate(now.getDate() - day - 6);
-      startOfLastWeek.setHours(0,0,0,0);
+      startOfLastWeek.setDate(now.getDate() - currentDay - 6);
+      startOfLastWeek.setHours(0, 0, 0, 0);
 
       const endOfLastWeek = new Date(startOfLastWeek);
       endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
-      endOfLastWeek.setHours(23,59,59,999);
+      endOfLastWeek.setHours(23, 59, 59, 999);
 
       return date >= startOfLastWeek && date <= endOfLastWeek;
     }
 
-    function isThisMonth(date) {
+    function isThisMonth(dateInput) {
+      const date = parseDate(dateInput);
       const now = new Date();
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
     }
 
-    function isLastMonth(date) {
+    function isLastMonth(dateInput) {
+      const date = parseDate(dateInput);
       const now = new Date();
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       return date.getMonth() === lastMonth.getMonth() && date.getFullYear() === lastMonth.getFullYear();
@@ -382,26 +395,28 @@
       transactionList.innerHTML = '';
 
       transactions.forEach((t) => {
-        const amount = parseFloat(t.amount);
-        const tDate = new Date(t.date);
+        const amount = Number(t.amount) || 0;
+        const tDate = parseDate(t.date);
 
         if (t.type === 'income') {
           totalBalance += amount;
         } else {
           totalBalance -= amount;
 
-          if (isThisWeek(tDate)) thisWeekGider += amount;
-          if (isLastWeek(tDate)) lastWeekGider += amount;
-          if (isThisMonth(tDate)) thisMonthGider += amount;
-          if (isLastMonth(tDate)) lastMonthGider += amount;
+          if (isThisWeek(t.date)) thisWeekGider += amount;
+          if (isLastWeek(t.date)) lastWeekGider += amount;
+          if (isThisMonth(t.date)) thisMonthGider += amount;
+          if (isLastMonth(t.date)) lastMonthGider += amount;
         }
 
         const item = document.createElement('div');
         item.className = 'transaction-item';
+        const displayDate = tDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
         item.innerHTML = `
           <div class="transaction-info">
-            <span class="transaction-title">${t.desc}</span>
-            <span class="transaction-date">${tDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
+            <span class="transaction-title">${t.desc || 'Açıklamasız'}</span>
+            <span class="transaction-date">${displayDate}</span>
           </div>
           <div style="display: flex; align-items: center;">
             <span class="transaction-amount ${t.type}">
@@ -422,6 +437,7 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
+    // SUPABASE VE YEREL VERİYİ KORUYARAK BİRLEŞTİRME (VERİ SİLİNMESİNİ ENGELLER)
     async function syncFromSupabase(showNotification = false) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
@@ -432,11 +448,16 @@
         });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) {
-            transactions = data;
+          if (Array.isArray(data) && data.length > 0) {
+            // Yerel veriler ile internet verilerini id bazında güvenle birleştir
+            const map = new Map();
+            transactions.forEach(item => map.set(String(item.id), item));
+            data.forEach(item => map.set(String(item.id), item));
+
+            transactions = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
             renderApp();
-            if (showNotification) showToast("✅ Veriler Eşitlendi!");
           }
+          if (showNotification) showToast("✅ Veriler Eşitlendi!");
         }
       } catch (err) {
         console.error('Supabase yükleme hatası:', err);
@@ -469,6 +490,7 @@
         date: new Date().toISOString()
       };
 
+      // Anında ekrana yaz ve kaydedip sakla
       transactions.unshift(newTransaction);
       renderApp();
 
@@ -488,9 +510,12 @@
         });
         if (res.ok) {
           showToast("💾 Veritabanına Kaydedildi!");
+        } else {
+          showToast("💾 Telefona Kaydedildi!");
         }
       } catch (err) {
         console.error('Supabase kaydetme hatası:', err);
+        showToast("💾 Telefona Kaydedildi!");
       }
     });
 
@@ -550,11 +575,6 @@
 
     renderApp();
     syncFromSupabase(false);
-
-    // Uygulamaya her geri dönüldüğünde (sekme değiştiğinde veya telefonda açıldığında) 1 defa verileri tazeler
-    window.addEventListener('focus', () => {
-      syncFromSupabase(false);
-    });
   </script>
 </body>
 </html>
