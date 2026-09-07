@@ -128,9 +128,7 @@
       transition: transform 0.3s ease;
     }
 
-    .icon-btn:active {
-      transform: scale(0.9);
-    }
+    .icon-btn:active { transform: scale(0.9); }
 
     .drawer-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -286,12 +284,9 @@
   </div>
 
   <script>
-    // -----------------------------------------------------------------
-    // SUPABASE BİLGİLERİN
-    // -----------------------------------------------------------------
+    // --- SUPABASE BİLGİLERİN ---
     const SUPABASE_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";
-    // -----------------------------------------------------------------
 
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
 
@@ -308,13 +303,19 @@
     const lastMonthEl = document.getElementById('lastMonthExpense');
     const syncBtn = document.getElementById('syncBtn');
 
+    // --- PAZARTESİ-PAZAR HAFTALIK TARİH MANTIĞI ---
     function isThisWeek(date) {
       const now = new Date();
+      const day = now.getDay() || 7; // Pzt: 1 ... Pzr: 7
       const startOfWeek = new Date(now);
-      const day = now.getDay() || 7;
       startOfWeek.setDate(now.getDate() - day + 1);
       startOfWeek.setHours(0,0,0,0);
-      return date >= startOfWeek && date <= now;
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23,59,59,999);
+
+      return date >= startOfWeek && date <= endOfWeek;
     }
 
     function isLastWeek(date) {
@@ -360,6 +361,7 @@
         } else {
           totalBalance -= amount;
 
+          // Günlük girilen her gider tarihine göre haftalık/aylık kartına eklenir
           if (isThisWeek(tDate)) thisWeekGider += amount;
           if (isLastWeek(tDate)) lastWeekGider += amount;
           if (isThisMonth(tDate)) thisMonthGider += amount;
@@ -413,7 +415,6 @@
       }
     }
 
-    // Eşitle Butonu Tıklama Animasyonu
     syncBtn.addEventListener('click', async () => {
       syncBtn.style.transform = 'rotate(360deg)';
       syncBtn.style.transition = 'transform 0.6s ease';
@@ -424,8 +425,8 @@
       }, 600);
     });
 
-    // --- İŞLEM EKLEME ---
-    form.addEventListener('submit', (e) => {
+    // --- İŞLEM EKLEME (GÜNLÜK KAYIT -> HAFTALIĞA EKLENİR) ---
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const newTransaction = {
         id: Date.now(),
@@ -441,30 +442,39 @@
       descInput.value = '';
       amountInput.value = '';
 
-      fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(newTransaction)
-      }).catch(err => console.error('Supabase kaydetme hatası:', err));
+      // Supabase Veritabanına Anında Gönder
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(newTransaction)
+        });
+      } catch (err) {
+        console.error('Supabase kaydetme hatası:', err);
+      }
     });
 
     // --- İŞLEM SİLME ---
-    window.deleteTransaction = function(id) {
+    window.deleteTransaction = async function(id) {
       transactions = transactions.filter(t => t.id !== id);
       renderApp();
 
-      fetch(`${SUPABASE_URL}/rest/v1/transactions?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
-        }
-      }).catch(err => console.error('Supabase silme hatası:', err));
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/transactions?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+      } catch (err) {
+        console.error('Supabase silme hatası:', err);
+      }
     };
 
     // --- AYARLAR VE TEMA ---
