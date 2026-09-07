@@ -125,6 +125,11 @@
       color: var(--text); width: 42px; height: 42px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.2rem; cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.9);
     }
 
     .drawer-overlay {
@@ -228,16 +233,18 @@
       <label>HAKKIMDA</label>
       <div class="about-box">
         <b>Sedonar Bütçe v2.0</b><br><br>
-        Selam, ben Sedonar! 18 yaşındayım, 2 yıllık elektrik öğrencisiyim. Bu uygulama harcamalarınızı takip edebilmeniz için tasarlandı. Bilgileriniz Supabase veritabanında güvenle saklanır.
+        Selam, ben Sedonar! 18 yaşındayım ve 2 yıllık Elektrik bölümü öğrencisiyim.<br><br>
+        Bu uygulamayı, <i>"Bu ay o kadar param nereye gitti?"</i> sorusuna cevap bulabilmek ve harcamalarımızı kolayca kontrol edebilmek için geliştirdim.<br><br>
+        🔒 Tüm verileriniz Supabase veritabanında güvenle saklanmaktadır.
       </div>
     </div>
   </div>
 
   <div class="app-container">
     <header>
-      <button class="icon-btn" id="openSettings">⚙️</button>
+      <button class="icon-btn" id="openSettings" title="Ayarlar">⚙️</button>
       <h1>Bütçe Takibi</h1>
-      <div style="width: 42px;"></div>
+      <button class="icon-btn" id="syncBtn" title="Verileri Eşitle">🔄</button>
     </header>
 
     <div class="balance-card">
@@ -280,10 +287,10 @@
 
   <script>
     // -----------------------------------------------------------------
-    // SUPABASE BİLGİLERİNİ BURAYA YAPIŞTIR
+    // SUPABASE BİLGİLERİN
     // -----------------------------------------------------------------
-    const SUPABASE_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co/rest/v1/"; // Kendi Supabase URL adresin
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";              // Kendi anon public key değerin
+    const SUPABASE_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";
     // -----------------------------------------------------------------
 
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
@@ -299,6 +306,7 @@
     const lastWeekEl = document.getElementById('lastWeekExpense');
     const thisMonthEl = document.getElementById('thisMonthExpense');
     const lastMonthEl = document.getElementById('lastMonthExpense');
+    const syncBtn = document.getElementById('syncBtn');
 
     function isThisWeek(date) {
       const now = new Date();
@@ -384,7 +392,7 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
-    // --- SUPABASE VERİ ÇEKME ---
+    // --- SUPABASE VERİ ÇEKME / EŞİTLEME ---
     async function syncFromSupabase() {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
@@ -395,7 +403,7 @@
         });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             transactions = data;
             renderApp();
           }
@@ -404,6 +412,17 @@
         console.error('Supabase yükleme hatası:', err);
       }
     }
+
+    // Eşitle Butonu Tıklama Animasyonu
+    syncBtn.addEventListener('click', async () => {
+      syncBtn.style.transform = 'rotate(360deg)';
+      syncBtn.style.transition = 'transform 0.6s ease';
+      await syncFromSupabase();
+      setTimeout(() => {
+        syncBtn.style.transform = 'none';
+        syncBtn.style.transition = 'none';
+      }, 600);
+    });
 
     // --- İŞLEM EKLEME ---
     form.addEventListener('submit', (e) => {
@@ -416,14 +435,12 @@
         date: new Date().toISOString()
       };
 
-      // 1. Ekranı Yenile
       transactions.unshift(newTransaction);
       renderApp();
 
       descInput.value = '';
       amountInput.value = '';
 
-      // 2. Supabase Veritabanına Gönder
       fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
         method: 'POST',
         headers: {
@@ -488,7 +505,6 @@
       snowContainer.appendChild(flake);
     }
 
-    // Uygulama Başlangıcı
     renderApp();
     syncFromSupabase();
   </script>
