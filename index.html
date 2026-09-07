@@ -44,7 +44,6 @@
       --input-bg: #f1f5f9;
     }
 
-    /* ❄️ KIŞ MODU TEMASI */
     :root[data-theme="winter"] {
       --bg: #0b132b;
       --card-bg: rgba(28, 37, 65, 0.85);
@@ -85,16 +84,12 @@
       display: none;
     }
 
-    :root[data-theme="winter"] #snowContainer {
-      display: block;
-    }
+    :root[data-theme="winter"] #snowContainer { display: block; }
 
     .snowflake {
       position: absolute;
-      top: -10px;
-      color: #fff;
-      font-size: 1rem;
-      user-select: none;
+      top: -10px; color: #fff;
+      font-size: 1rem; user-select: none;
       animation: fall linear infinite;
     }
 
@@ -104,66 +99,46 @@
     }
 
     .snow-drift {
-      display: none;
-      position: fixed;
+      display: none; position: fixed;
       bottom: 0; left: 0; width: 100%; height: 25px;
       background: radial-gradient(circle at 20% 100%, #ffffff 0%, #ffffff 40%, transparent 60%),
                   radial-gradient(circle at 50% 100%, #ffffff 0%, #ffffff 50%, transparent 70%),
                   radial-gradient(circle at 80% 100%, #ffffff 0%, #ffffff 40%, transparent 60%);
-      pointer-events: none;
-      z-index: 90;
-      opacity: 0.9;
+      pointer-events: none; z-index: 90; opacity: 0.9;
     }
 
-    :root[data-theme="winter"] .snow-drift {
-      display: block;
-    }
+    :root[data-theme="winter"] .snow-drift { display: block; }
 
     .app-container {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      z-index: 1;
+      width: 100%; max-width: 480px;
+      display: flex; flex-direction: column; gap: 1.25rem; z-index: 1;
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0;
+      display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;
     }
 
     header h1 { font-size: 1.4rem; font-weight: 700; }
 
     .icon-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      width: 42px; height: 42px;
-      border-radius: 50%;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      color: var(--text); width: 42px; height: 42px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.2rem; cursor: pointer;
     }
 
     .drawer-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 99; opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+      z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
 
     .drawer-overlay.active { opacity: 1; pointer-events: auto; }
 
     .drawer {
-      position: fixed; top: 0; left: -300px;
-      width: 280px; height: 100%;
-      background: var(--bg);
-      border-right: 1px solid var(--card-border);
-      z-index: 100; padding: 2rem 1.5rem;
-      display: flex; flex-direction: column; gap: 1.5rem;
+      position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
+      background: var(--bg); border-right: 1px solid var(--card-border);
+      z-index: 100; padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;
       transition: left 0.3s ease;
     }
 
@@ -176,52 +151,40 @@
     .time-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
     .time-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 0.85rem; border-radius: 1rem;
-      display: flex; flex-direction: column; gap: 0.25rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      padding: 0.85rem; border-radius: 1rem; display: flex; flex-direction: column; gap: 0.25rem;
     }
 
     .time-card span { font-size: 0.75rem; color: var(--text-muted); }
     .time-card strong { font-size: 1.1rem; color: var(--primary); }
 
     .balance-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1.25rem; padding: 1.25rem;
-      display: flex; flex-direction: column; gap: 0.5rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;
     }
 
     .balance-card .total { font-size: 2rem; font-weight: 800; color: var(--primary); }
 
     .form-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1.25rem; padding: 1.25rem;
-      display: flex; flex-direction: column; gap: 0.85rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;
     }
 
     input, select {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 0.75rem; padding: 0.85rem 1rem;
-      color: var(--text); font-size: 1rem; outline: none;
+      width: 100%; background: var(--input-bg); border: 1px solid var(--card-border);
+      border-radius: 0.75rem; padding: 0.85rem 1rem; color: var(--text); font-size: 1rem; outline: none;
     }
 
     .btn-submit {
-      width: 100%; background: var(--primary);
-      color: #000; font-weight: 700; padding: 0.9rem;
-      border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1rem;
+      width: 100%; background: var(--primary); color: #000;
+      font-weight: 700; padding: 0.9rem; border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1rem;
     }
 
     .transactions-list { display: flex; flex-direction: column; gap: 0.65rem; }
 
     .transaction-item {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 0.85rem 1.1rem; border-radius: 1rem;
-      display: flex; justify-content: space-between; align-items: center;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      padding: 0.85rem 1.1rem; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center;
     }
 
     .transaction-info { display: flex; flex-direction: column; gap: 0.2rem; }
@@ -238,8 +201,7 @@
 
     .about-box {
       font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;
-      background: var(--card-bg); padding: 0.85rem; border-radius: 0.75rem;
-      border: 1px solid var(--card-border);
+      background: var(--card-bg); padding: 0.85rem; border-radius: 0.75rem; border: 1px solid var(--card-border);
     }
   </style>
 </head>
@@ -266,7 +228,7 @@
       <label>HAKKIMDA</label>
       <div class="about-box">
         <b>Sedonar Bütçe v2.0</b><br><br>
-        Selam, ben Sedonar! 18 yaşındayım, 2 yıllık elektrik öğrencisiyim bu uygulama sizin aylık harcamalarınızın neden bukadar param gitti? diye sormamanız için yapıldı umarım beğenmişsinizdir bilgileriniz Supabase ile korunmakta.
+        Selam, ben Sedonar! 18 yaşındayım, 2 yıllık elektrik öğrencisiyim. Bu uygulama harcamalarınızı takip edebilmeniz için tasarlandı. Bilgileriniz Supabase veritabanında güvenle saklanır.
       </div>
     </div>
   </div>
@@ -317,6 +279,13 @@
   </div>
 
   <script>
+    // -----------------------------------------------------------------
+    // SUPABASE BİLGİLERİNİ BURAYA YAPIŞTIR
+    // -----------------------------------------------------------------
+    const SUPABASE_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co/rest/v1/"; // Kendi Supabase URL adresin
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";              // Kendi anon public key değerin
+    // -----------------------------------------------------------------
+
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
 
     const form = document.getElementById('budgetForm');
@@ -415,6 +384,28 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
+    // --- SUPABASE VERİ ÇEKME ---
+    async function syncFromSupabase() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            transactions = data;
+            renderApp();
+          }
+        }
+      } catch (err) {
+        console.error('Supabase yükleme hatası:', err);
+      }
+    }
+
+    // --- İŞLEM EKLEME ---
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const newTransaction = {
@@ -425,18 +416,41 @@
         date: new Date().toISOString()
       };
 
+      // 1. Ekranı Yenile
       transactions.unshift(newTransaction);
       renderApp();
 
       descInput.value = '';
       amountInput.value = '';
+
+      // 2. Supabase Veritabanına Gönder
+      fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(newTransaction)
+      }).catch(err => console.error('Supabase kaydetme hatası:', err));
     });
 
+    // --- İŞLEM SİLME ---
     window.deleteTransaction = function(id) {
       transactions = transactions.filter(t => t.id !== id);
       renderApp();
+
+      fetch(`${SUPABASE_URL}/rest/v1/transactions?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+      }).catch(err => console.error('Supabase silme hatası:', err));
     };
 
+    // --- AYARLAR VE TEMA ---
     const openBtn = document.getElementById('openSettings');
     const drawer = document.getElementById('drawer');
     const overlay = document.getElementById('overlay');
@@ -461,6 +475,7 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelect.value = savedTheme;
 
+    // --- KAR TANESİ ---
     const snowContainer = document.getElementById('snowContainer');
     for (let i = 0; i < 30; i++) {
       const flake = document.createElement('div');
@@ -473,7 +488,9 @@
       snowContainer.appendChild(flake);
     }
 
+    // Uygulama Başlangıcı
     renderApp();
+    syncFromSupabase();
   </script>
 </body>
 </html>
