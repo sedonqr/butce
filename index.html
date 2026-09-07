@@ -10,7 +10,6 @@
   <meta name="theme-color" content="#1c1917">
 
   <style>
-    /* CSS Temaları */
     :root[data-theme="summer"] {
       --bg: #1c1917;
       --card-bg: rgba(44, 36, 22, 0.85);
@@ -130,6 +129,29 @@
 
     .icon-btn:active { transform: scale(0.9); }
 
+    /* Bildirim Toast Mesajı */
+    .toast {
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--primary);
+      color: #000;
+      font-weight: 700;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     .drawer-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
@@ -210,6 +232,9 @@
 </head>
 <body>
 
+  <!-- Toast Bildirimi -->
+  <div class="toast" id="toast">✅ Veriler Eşitlendi!</div>
+
   <div id="snowContainer"></div>
   <div class="snow-drift"></div>
 
@@ -284,9 +309,12 @@
   </div>
 
   <script>
-    // --- SUPABASE BİLGİLERİN ---
-    const SUPABASE_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co";
+    // --- SUPABASE BİLGİLERİ (URL Otomatik Temizleme) ---
+    const RAW_URL = "https://dovzzqmkrxyunbkdsyzy.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdnp6cW1rcnh5dW5ia2RzeXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2Mjc0OTIsImV4cCI6MjEwNDIwMzQ5Mn0.mFhbVIEbV8ior-vi75jdhXVhYn0ijrsa8COmjLzkr0Q";
+    
+    // URL'deki fazla /rest/v1/ parçalarını temizleyen güvenli adres
+    const SUPABASE_URL = RAW_URL.replace(/\/+$|\/rest\/v1\/?$/, '');
 
     let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
 
@@ -302,11 +330,17 @@
     const thisMonthEl = document.getElementById('thisMonthExpense');
     const lastMonthEl = document.getElementById('lastMonthExpense');
     const syncBtn = document.getElementById('syncBtn');
+    const toast = document.getElementById('toast');
 
-    // --- PAZARTESİ-PAZAR HAFTALIK TARİH MANTIĞI ---
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
     function isThisWeek(date) {
       const now = new Date();
-      const day = now.getDay() || 7; // Pzt: 1 ... Pzr: 7
+      const day = now.getDay() || 7;
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - day + 1);
       startOfWeek.setHours(0,0,0,0);
@@ -361,7 +395,6 @@
         } else {
           totalBalance -= amount;
 
-          // Günlük girilen her gider tarihine göre haftalık/aylık kartına eklenir
           if (isThisWeek(tDate)) thisWeekGider += amount;
           if (isLastWeek(tDate)) lastWeekGider += amount;
           if (isThisMonth(tDate)) thisMonthGider += amount;
@@ -394,8 +427,8 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
-    // --- SUPABASE VERİ ÇEKME / EŞİTLEME ---
-    async function syncFromSupabase() {
+    // --- SUPABASE VERİ ÇEKME / CİHAZLAR ARASI EŞİTLEME ---
+    async function syncFromSupabase(isManual = false) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
           headers: {
@@ -408,24 +441,29 @@
           if (Array.isArray(data)) {
             transactions = data;
             renderApp();
+            if (isManual) showToast("✅ Veriler Eşitlendi!");
           }
+        } else {
+          if (isManual) showToast("⚠️ Eşitleme Hatası!");
         }
       } catch (err) {
         console.error('Supabase yükleme hatası:', err);
+        if (isManual) showToast("⚠️ Bağlantı Hatası!");
       }
     }
 
+    // Manuel Eşitle Butonu
     syncBtn.addEventListener('click', async () => {
       syncBtn.style.transform = 'rotate(360deg)';
       syncBtn.style.transition = 'transform 0.6s ease';
-      await syncFromSupabase();
+      await syncFromSupabase(true);
       setTimeout(() => {
         syncBtn.style.transform = 'none';
         syncBtn.style.transition = 'none';
       }, 600);
     });
 
-    // --- İŞLEM EKLEME (GÜNLÜK KAYIT -> HAFTALIĞA EKLENİR) ---
+    // --- İŞLEM EKLEME ---
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const newTransaction = {
@@ -442,9 +480,8 @@
       descInput.value = '';
       amountInput.value = '';
 
-      // Supabase Veritabanına Anında Gönder
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -454,6 +491,9 @@
           },
           body: JSON.stringify(newTransaction)
         });
+        if (res.ok) {
+          showToast("💾 Veritabanına Kaydedildi!");
+        }
       } catch (err) {
         console.error('Supabase kaydetme hatası:', err);
       }
@@ -472,6 +512,7 @@
             'Authorization': `Bearer ${SUPABASE_KEY}`
           }
         });
+        showToast("🗑️ İşlem Silindi!");
       } catch (err) {
         console.error('Supabase silme hatası:', err);
       }
@@ -515,8 +556,14 @@
       snowContainer.appendChild(flake);
     }
 
+    // İlk Açılış
     renderApp();
     syncFromSupabase();
+
+    // Otomatik Eşitleme: Her 10 saniyede bir cihazlar arası veriyi arka planda günceller
+    setInterval(() => {
+      syncFromSupabase(false);
+    }, 10000);
   </script>
 </body>
 </html>
