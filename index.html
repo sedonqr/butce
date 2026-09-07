@@ -13,26 +13,24 @@
     /* CSS Temaları */
     :root[data-theme="summer"] {
       --bg: #1c1917;
-      --card-bg: rgba(44, 36, 22, 0.75);
-      --card-border: rgba(234, 179, 8, 0.25);
+      --card-bg: rgba(44, 36, 22, 0.85);
+      --card-border: rgba(234, 179, 8, 0.3);
       --primary: #eab308;
-      --primary-hover: #ca8a04;
       --danger: #ef4444;
       --text: #fef08a;
       --text-muted: #a1a1aa;
-      --input-bg: rgba(28, 25, 23, 0.8);
+      --input-bg: rgba(28, 25, 23, 0.9);
     }
 
     :root[data-theme="dark"] {
       --bg: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(30, 41, 59, 0.8);
+      --card-border: rgba(255, 255, 255, 0.1);
       --primary: #10b981;
-      --primary-hover: #059669;
       --danger: #ef4444;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --input-bg: rgba(15, 23, 42, 0.6);
+      --input-bg: rgba(15, 23, 42, 0.7);
     }
 
     :root[data-theme="light"] {
@@ -40,11 +38,48 @@
       --card-bg: #ffffff;
       --card-border: rgba(0, 0, 0, 0.1);
       --primary: #2563eb;
-      --primary-hover: #1d4ed8;
       --danger: #dc2626;
       --text: #0f172a;
       --text-muted: #64748b;
       --input-bg: #f1f5f9;
+    }
+
+    /* ❄️ KIŞ MODU TEMASI */
+    :root[data-theme="winter"] {
+      --bg: #0b132b;
+      --card-bg: rgba(28, 37, 65, 0.85);
+      --card-border: rgba(224, 251, 252, 0.3);
+      --primary: #38bdf8;
+      --danger: #f87171;
+      --text: #f0f9ff;
+      --text-muted: #93c5fd;
+      --input-bg: rgba(11, 19, 43, 0.9);
+    }
+
+    /* Kış Modu Kar Örtüsü Efektleri */
+    :root[data-theme="winter"] .btn-submit,
+    :root[data-theme="winter"] .time-card,
+    :root[data-theme="winter"] .form-card,
+    :root[data-theme="winter"] .balance-card,
+    :root[data-theme="winter"] .transaction-item {
+      position: relative;
+    }
+
+    :root[data-theme="winter"] .btn-submit::before,
+    :root[data-theme="winter"] .time-card::before,
+    :root[data-theme="winter"] .form-card::before,
+    :root[data-theme="winter"] .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 8%;
+      right: 8%;
+      height: 7px;
+      background: #ffffff;
+      border-radius: 10px 10px 3px 3px;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.8);
+      z-index: 10;
+      pointer-events: none;
     }
 
     * {
@@ -53,7 +88,6 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
 
     body {
@@ -62,9 +96,55 @@
       min-height: 100vh;
       padding: clamp(1rem, 4vw, 2rem);
       padding-top: max(1.5rem, env(safe-area-inset-top));
-      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+      padding-bottom: max(3rem, env(safe-area-inset-bottom));
       display: flex;
       justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Kar Taneleri Konteyneri */
+    #snowContainer {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 999;
+      display: none;
+    }
+
+    :root[data-theme="winter"] #snowContainer {
+      display: block;
+    }
+
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      color: #fff;
+      font-size: 1rem;
+      user-select: none;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(360deg); opacity: 0.2; }
+    }
+
+    /* Alt Kar Birikintisi */
+    .snow-drift {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; width: 100%; height: 25px;
+      background: radial-gradient(circle at 20% 100%, #ffffff 0%, #ffffff 40%, transparent 60%),
+                  radial-gradient(circle at 50% 100%, #ffffff 0%, #ffffff 50%, transparent 70%),
+                  radial-gradient(circle at 80% 100%, #ffffff 0%, #ffffff 40%, transparent 60%);
+      pointer-events: none;
+      z-index: 90;
+      opacity: 0.9;
+    }
+
+    :root[data-theme="winter"] .snow-drift {
+      display: block;
     }
 
     .app-container {
@@ -73,6 +153,7 @@
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+      z-index: 1;
     }
 
     header {
@@ -82,171 +163,124 @@
       padding: 0.5rem 0;
     }
 
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
 
     .icon-btn {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text);
-      width: 42px;
-      height: 42px;
+      width: 42px; height: 42px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; cursor: pointer;
     }
 
-    /* Sol Yan Ayarlar Menüsü (Drawer) */
+    /* Sol Yan Ayarlar Menüsü */
     .drawer-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(4px);
-      z-index: 99;
-      opacity: 0;
-      pointer-events: none;
+      z-index: 99; opacity: 0; pointer-events: none;
       transition: opacity 0.3s;
     }
 
-    .drawer-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .drawer-overlay.active { opacity: 1; pointer-events: auto; }
 
     .drawer {
-      position: fixed;
-      top: 0; left: -300px;
-      width: 280px;
-      height: 100%;
+      position: fixed; top: 0; left: -300px;
+      width: 280px; height: 100%;
       background: var(--bg);
       border-right: 1px solid var(--card-border);
-      z-index: 100;
-      padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+      z-index: 100; padding: 2rem 1.5rem;
+      display: flex; flex-direction: column; gap: 1.5rem;
       transition: left 0.3s ease;
-      box-shadow: 5px 0 25px rgba(0,0,0,0.5);
     }
 
-    .drawer.active {
-      left: 0;
-    }
+    .drawer.active { left: 0; }
+    .drawer h2 { font-size: 1.3rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem; }
 
-    .drawer h2 {
-      font-size: 1.3rem;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 0.75rem;
-    }
+    .setting-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .setting-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
 
-    .setting-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .setting-group label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    /* Zaman Bazlı Harcama Kartları */
-    .time-stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-    }
+    /* Zaman Bazlı Kartlar */
+    .time-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
     .time-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 0.85rem;
-      border-radius: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+      padding: 0.85rem; border-radius: 1rem;
+      display: flex; flex-direction: column; gap: 0.25rem;
     }
 
-    .time-card span {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .time-card strong {
-      font-size: 1.1rem;
-      color: var(--primary);
-    }
+    .time-card span { font-size: 0.75rem; color: var(--text-muted); }
+    .time-card strong { font-size: 1.1rem; color: var(--primary); }
 
     /* Bakiye Kartı */
     .balance-card {
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
-      border-radius: 1.25rem;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      border-radius: 1.25rem; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
     }
 
-    .balance-card .total {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
+    .balance-card .total { font-size: 2rem; font-weight: 800; color: var(--primary); }
 
     /* Form */
     .form-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 1.25rem;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
+      border-radius: 1.25rem; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.85rem;
     }
 
     input, select {
       width: 100%;
       background: var(--input-bg);
       border: 1px solid var(--card-border);
-      border-radius: 0.75rem;
-      padding: 0.85rem 1rem;
-      color: var(--text);
-      font-size: 1rem;
-      outline: none;
+      border-radius: 0.75rem; padding: 0.85rem 1rem;
+      color: var(--text); font-size: 1rem; outline: none;
     }
 
     .btn-submit {
-      width: 100%;
-      background: var(--primary);
-      color: #000;
-      font-weight: 700;
-      padding: 0.9rem;
-      border-radius: 0.75rem;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
+      width: 100%; background: var(--primary);
+      color: #000; font-weight: 700; padding: 0.9rem;
+      border-radius: 0.75rem; border: none; cursor: pointer; font-size: 1rem;
+    }
+
+    /* İşlem Listesi */
+    .transactions-list { display: flex; flex-direction: column; gap: 0.65rem; }
+
+    .transaction-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.85rem 1.1rem; border-radius: 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .transaction-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .transaction-title { font-weight: 600; font-size: 0.95rem; }
+    .transaction-date { font-size: 0.75rem; color: var(--text-muted); }
+    .transaction-amount { font-weight: 700; font-size: 1rem; }
+    .transaction-amount.income { color: var(--primary); }
+    .transaction-amount.expense { color: var(--danger); }
+
+    .btn-delete {
+      background: none; border: none; color: var(--danger);
+      font-size: 1.1rem; cursor: pointer; padding: 0.3rem; margin-left: 0.5rem;
     }
 
     .about-box {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-      background: var(--card-bg);
-      padding: 0.85rem;
-      border-radius: 0.75rem;
+      font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;
+      background: var(--card-bg); padding: 0.85rem; border-radius: 0.75rem;
       border: 1px solid var(--card-border);
     }
   </style>
 </head>
 <body>
+
+  <!-- Kar Efekti Elemanları -->
+  <div id="snowContainer"></div>
+  <div class="snow-drift"></div>
 
   <!-- Sol Ayarlar Menüsü -->
   <div class="drawer-overlay" id="overlay"></div>
@@ -257,6 +291,7 @@
       <label>TEMA SEÇİMİ</label>
       <select id="themeSelect">
         <option value="summer">☀️ Yaz Güneşi (Sarı Sıcak)</option>
+        <option value="winter">❄️ Kış Modu (Karlı)</option>
         <option value="dark">🌙 Karanlık (Dark Mode)</option>
         <option value="light">⚪ Aydınlık (Light Mode)</option>
       </select>
@@ -266,7 +301,7 @@
       <label>HAKKIMDA</label>
       <div class="about-box">
         <b>Sedonar Bütçe v2.0</b><br>
-        Kişisel harcamalarını haftalık ve aylık takip etmen için geliştirildi. Veriler Supabase üzerinde güvenle saklanır.
+        Kişisel harcamalarını haftalık ve aylık takip etmen için tasarlandı. Tüm veriler cihazında ve bulutta güvenle saklanır.
       </div>
     </div>
   </div>
@@ -280,7 +315,7 @@
 
     <!-- Toplam Bakiye -->
     <div class="balance-card">
-      <span style="font-size: 0.85rem; color: var(--text-muted);">Toplam Net Bakiye</span>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Net Bakiye</span>
       <div class="total" id="totalBalance">₺0.00</div>
     </div>
 
@@ -306,18 +341,151 @@
 
     <!-- Form -->
     <form class="form-card" id="budgetForm">
-      <input type="text" id="descInput" placeholder="Açıklama (Örn: Dondurma, Kahve)" required>
+      <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required>
       <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required>
       <select id="typeInput">
         <option value="expense">Gider (-)</option>
         <option value="income">Gelir (+)</option>
       </select>
-      <button type="submit" class="btn-submit">Ekle</button>
+      <button type="submit" class="btn-submit">Kaydet</button>
     </form>
+
+    <!-- Son İşlemler Listesi -->
+    <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-top: 0.5rem;">Son İşlemler</div>
+    <div class="transactions-list" id="transactionList">
+      <!-- JavaScript ile buraya eklenecek -->
+    </div>
   </div>
 
   <script>
-    // Drawer Kontrolü
+    // --- VERİ YÖNETİMİ & HESAPLAMA ---
+    let transactions = JSON.parse(localStorage.getItem('sedonar_transactions')) || [];
+
+    const form = document.getElementById('budgetForm');
+    const descInput = document.getElementById('descInput');
+    const amountInput = document.getElementById('amountInput');
+    const typeInput = document.getElementById('typeInput');
+    const transactionList = document.getElementById('transactionList');
+
+    const totalBalanceEl = document.getElementById('totalBalance');
+    const thisWeekEl = document.getElementById('thisWeekExpense');
+    const lastWeekEl = document.getElementById('lastWeekExpense');
+    const thisMonthEl = document.getElementById('thisMonthExpense');
+    const lastMonthEl = document.getElementById('lastMonthExpense');
+
+    // Tarih Yardımcıları
+    function isThisWeek(date) {
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      const day = now.getDay() || 7;
+      startOfWeek.setDate(now.getDate() - day + 1);
+      startOfWeek.setHours(0,0,0,0);
+      return date >= startOfWeek && date <= now;
+    }
+
+    function isLastWeek(date) {
+      const now = new Date();
+      const day = now.getDay() || 7;
+      const startOfLastWeek = new Date(now);
+      startOfLastWeek.setDate(now.getDate() - day - 6);
+      startOfLastWeek.setHours(0,0,0,0);
+
+      const endOfLastWeek = new Date(startOfLastWeek);
+      endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+      endOfLastWeek.setHours(23,59,59,999);
+
+      return date >= startOfLastWeek && date <= endOfLastWeek;
+    }
+
+    function isThisMonth(date) {
+      const now = new Date();
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }
+
+    function isLastMonth(date) {
+      const now = new Date();
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return date.getMonth() === lastMonth.getMonth() && date.getFullYear() === lastMonth.getFullYear();
+    }
+
+    // Ekranı Güncelleme Fonksiyonu
+    function renderApp() {
+      let totalBalance = 0;
+      let thisWeekGider = 0;
+      let lastWeekGider = 0;
+      let thisMonthGider = 0;
+      let lastMonthGider = 0;
+
+      transactionList.innerHTML = '';
+
+      transactions.forEach((t) => {
+        const amount = parseFloat(t.amount);
+        const tDate = new Date(t.date);
+
+        if (t.type === 'income') {
+          totalBalance += amount;
+        } else {
+          totalBalance -= amount;
+
+          if (isThisWeek(tDate)) thisWeekGider += amount;
+          if (isLastWeek(tDate)) lastWeekGider += amount;
+          if (isThisMonth(tDate)) thisMonthGider += amount;
+          if (isLastMonth(tDate)) lastMonthGider += amount;
+        }
+
+        // Liste Elemanı
+        const item = document.createElement('div');
+        item.className = 'transaction-item';
+        item.innerHTML = `
+          <div class="transaction-info">
+            <span class="transaction-title">${t.desc}</span>
+            <span class="transaction-date">${tDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <span class="transaction-amount ${t.type}">
+              ${t.type === 'income' ? '+' : '-'}₺${amount.toFixed(2)}
+            </span>
+            <button class="btn-delete" onclick="deleteTransaction(${t.id})">🗑️</button>
+          </div>
+        `;
+        transactionList.appendChild(item);
+      });
+
+      // Kartları Güncelle
+      totalBalanceEl.innerText = `₺${totalBalance.toFixed(2)}`;
+      thisWeekEl.innerText = `₺${thisWeekGider.toFixed(2)}`;
+      lastWeekEl.innerText = `₺${lastWeekGider.toFixed(2)}`;
+      thisMonthEl.innerText = `₺${thisMonthGider.toFixed(2)}`;
+      lastMonthEl.innerText = `₺${lastMonthGider.toFixed(2)}`;
+
+      localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
+    }
+
+    // İşlem Ekleme
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newTransaction = {
+        id: Date.now(),
+        desc: descInput.value,
+        amount: parseFloat(amountInput.value),
+        type: typeInput.value,
+        date: new Date().toISOString()
+      };
+
+      transactions.unshift(newTransaction);
+      renderApp();
+
+      descInput.value = '';
+      amountInput.value = '';
+    });
+
+    // İşlem Silme
+    window.deleteTransaction = function(id) {
+      transactions = transactions.filter(t => t.id !== id);
+      renderApp();
+    };
+
+    // --- AYARLAR VE TEMA ---
     const openBtn = document.getElementById('openSettings');
     const drawer = document.getElementById('drawer');
     const overlay = document.getElementById('overlay');
@@ -333,16 +501,30 @@
       overlay.classList.remove('active');
     });
 
-    // Tema Değiştirme
     themeSelect.addEventListener('change', (e) => {
       document.documentElement.setAttribute('data-theme', e.target.value);
       localStorage.setItem('selectedTheme', e.target.value);
     });
 
-    // Kayıtlı Temayı Yükleme
     const savedTheme = localStorage.getItem('selectedTheme') || 'summer';
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelect.value = savedTheme;
+
+    // --- KAR TANESİ ÜRETİCİ ---
+    const snowContainer = document.getElementById('snowContainer');
+    for (let i = 0; i < 30; i++) {
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      flake.innerText = '❄';
+      flake.style.left = Math.random() * 100 + 'vw';
+      flake.style.animationDuration = (Math.random() * 3 + 3) + 's';
+      flake.style.animationDelay = Math.random() * 5 + 's';
+      flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+      snowContainer.appendChild(flake);
+    }
+
+    // Sayfa Yüklendiğinde Başlat
+    renderApp();
   </script>
 </body>
 </html>
