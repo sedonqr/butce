@@ -3,11 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Kişisel Bütçe Takibi</title>
+  <title>Sedonar Bütçe</title>
   
+  <!-- PWA & Mobil Tam Ekran Ayarları -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sedonar Bütçe">
   <meta name="theme-color" content="#1c1917">
+
+  <!-- Mobil Uygulama İkonu (iPhone & Android) -->
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2382/2382461.png">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2382/2382461.png">
+  
+  <!-- Dynamic PWA Manifest Altyapısı -->
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Sedonar%20B%C3%BCt%C3%A7e%20Takibi%22,%22short_name%22:%22B%C3%BCt%C3%A7e%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22#1c1917%22,%22theme_color%22:%22#1c1917%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/2382/2382461.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
 
   <style>
     :root[data-theme="summer"] {
@@ -194,6 +203,12 @@
       border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;
     }
 
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
     input, select {
       width: 100%; background: var(--input-bg); border: 1px solid var(--card-border);
       border-radius: 0.75rem; padding: 0.85rem 1rem; color: var(--text); font-size: 1rem; outline: none;
@@ -211,7 +226,9 @@
       padding: 0.85rem 1.1rem; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center;
     }
 
-    .transaction-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .transaction-info { display: flex; align-items: center; gap: 0.75rem; }
+    .category-icon { font-size: 1.4rem; background: rgba(255,255,255,0.05); padding: 0.4rem; border-radius: 50%; }
+    .transaction-details { display: flex; flex-direction: column; gap: 0.2rem; }
     .transaction-title { font-weight: 600; font-size: 0.95rem; }
     .transaction-date { font-size: 0.75rem; color: var(--text-muted); }
     .transaction-amount { font-weight: 700; font-size: 1rem; }
@@ -295,10 +312,24 @@
     <form class="form-card" id="budgetForm">
       <input type="text" id="descInput" placeholder="Açıklama (Örn: Kahve, Market)" required autocomplete="off">
       <input type="number" step="0.01" inputmode="decimal" id="amountInput" placeholder="Tutar (₺)" required autocomplete="off">
-      <select id="typeInput">
-        <option value="expense">Gider (-)</option>
-        <option value="income">Gelir (+)</option>
-      </select>
+      
+      <div class="form-row">
+        <select id="categoryInput">
+          <option value="🛒 Market">🛒 Market</option>
+          <option value="☕ Kahve">☕ Kahve / Cafe</option>
+          <option value="🚌 Ulaşım">🚌 Ulaşım / Yakıt</option>
+          <option value="⚡ Fatura">⚡ Fatura / Aidat</option>
+          <option value="🎮 Oyun">🎮 Oyun / Eğlence</option>
+          <option value="💰 Gelir">💰 Maaş / Gelir</option>
+          <option value="📦 Diğer">📦 Diğer</option>
+        </select>
+
+        <select id="typeInput">
+          <option value="expense">Gider (-)</option>
+          <option value="income">Gelir (+)</option>
+        </select>
+      </div>
+
       <button type="submit" class="btn-submit">Kaydet</button>
     </form>
 
@@ -316,6 +347,7 @@
     const form = document.getElementById('budgetForm');
     const descInput = document.getElementById('descInput');
     const amountInput = document.getElementById('amountInput');
+    const categoryInput = document.getElementById('categoryInput');
     const typeInput = document.getElementById('typeInput');
     const transactionList = document.getElementById('transactionList');
 
@@ -412,10 +444,17 @@
         item.className = 'transaction-item';
         const displayDate = tDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
 
+        // Kategori İkonunu Çekme
+        const catText = t.category || '📦 Diğer';
+        const catIcon = catText.split(' ')[0] || '📦';
+
         item.innerHTML = `
           <div class="transaction-info">
-            <span class="transaction-title">${t.desc || 'Açıklamasız'}</span>
-            <span class="transaction-date">${displayDate}</span>
+            <span class="category-icon">${catIcon}</span>
+            <div class="transaction-details">
+              <span class="transaction-title">${t.desc || 'Açıklamasız'}</span>
+              <span class="transaction-date">${displayDate} • ${catText}</span>
+            </div>
           </div>
           <div style="display: flex; align-items: center;">
             <span class="transaction-amount ${t.type}">
@@ -455,11 +494,6 @@
             renderApp();
           }
           if (showNotification) showToast("✅ Veriler Eşitlendi!");
-        } else {
-          if (showNotification) {
-            const errText = await res.text();
-            alert("Supabase Okuma Hatası: " + errText);
-          }
         }
       } catch (err) {
         console.error('Supabase yükleme hatası:', err);
@@ -489,6 +523,7 @@
         id: Date.now(),
         desc: descVal,
         amount: amountVal,
+        category: categoryInput.value,
         type: typeInput.value,
         date: new Date().toISOString()
       };
@@ -512,7 +547,7 @@
         });
 
         if (res.ok) {
-          showToast("🚀 Buluta ve Telefona Kaydedildi!");
+          showToast("🚀 Buluta Kaydedildi!");
         } else {
           const errJson = await res.json().catch(() => ({ message: res.statusText }));
           console.error("Supabase Hata:", errJson);
@@ -520,7 +555,7 @@
         }
       } catch (err) {
         console.error('Ağ/Bağlantı hatası:', err);
-        showToast("💾 Sadece Telefona Kaydedildi!");
+        showToast("💾 Telefona Kaydedildi!");
       }
     });
 
