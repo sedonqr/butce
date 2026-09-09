@@ -330,10 +330,9 @@
     function showToast(msg) {
       toast.innerText = msg;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+      setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // SAĞLAM TARİH HESAPLAYICILARI
     function parseDate(dateInput) {
       if (!dateInput) return new Date();
       const d = new Date(dateInput);
@@ -437,7 +436,6 @@
       localStorage.setItem('sedonar_transactions', JSON.stringify(transactions));
     }
 
-    // SUPABASE VE YEREL VERİYİ KORUYARAK BİRLEŞTİRME (VERİ SİLİNMESİNİ ENGELLER)
     async function syncFromSupabase(showNotification = false) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/transactions?select=*&order=date.desc`, {
@@ -449,7 +447,6 @@
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            // Yerel veriler ile internet verilerini id bazında güvenle birleştir
             const map = new Map();
             transactions.forEach(item => map.set(String(item.id), item));
             data.forEach(item => map.set(String(item.id), item));
@@ -458,9 +455,15 @@
             renderApp();
           }
           if (showNotification) showToast("✅ Veriler Eşitlendi!");
+        } else {
+          if (showNotification) {
+            const errText = await res.text();
+            alert("Supabase Okuma Hatası: " + errText);
+          }
         }
       } catch (err) {
         console.error('Supabase yükleme hatası:', err);
+        if (showNotification) showToast("⚠️ Bağlantı Hatası!");
       }
     }
 
@@ -490,7 +493,6 @@
         date: new Date().toISOString()
       };
 
-      // Anında ekrana yaz ve kaydedip sakla
       transactions.unshift(newTransaction);
       renderApp();
 
@@ -508,14 +510,17 @@
           },
           body: JSON.stringify(newTransaction)
         });
+
         if (res.ok) {
-          showToast("💾 Veritabanına Kaydedildi!");
+          showToast("🚀 Buluta ve Telefona Kaydedildi!");
         } else {
-          showToast("💾 Telefona Kaydedildi!");
+          const errJson = await res.json().catch(() => ({ message: res.statusText }));
+          console.error("Supabase Hata:", errJson);
+          alert("Supabase Kayıt Hatası: " + (errJson.message || JSON.stringify(errJson)));
         }
       } catch (err) {
-        console.error('Supabase kaydetme hatası:', err);
-        showToast("💾 Telefona Kaydedildi!");
+        console.error('Ağ/Bağlantı hatası:', err);
+        showToast("💾 Sadece Telefona Kaydedildi!");
       }
     });
 
@@ -531,7 +536,7 @@
             'Authorization': `Bearer ${SUPABASE_KEY}`
           }
         });
-        showToast("🗑️ İşlem Silindi!");
+        showToast("🗑️ Silindi!");
       } catch (err) {
         console.error('Supabase silme hatası:', err);
       }
