@@ -1,15 +1,19 @@
 export default async function handler(req, res) {
   try {
-    const SUPABASE_URL = process.env.SUPABASE_URL;
+    let SUPABASE_URL = process.env.SUPABASE_URL || '';
     const SUPABASE_KEY = process.env.SUPABASE_KEY;
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     const MY_EMAIL = process.env.MY_EMAIL;
 
-    // Son 7 günün verilerini Supabase'den çek
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      return res.status(500).json({ error: "Vercel üzerinde SUPABASE_URL veya SUPABASE_KEY tanımlı değil!" });
+    }
+
+    SUPABASE_URL = SUPABASE_URL.trim().replace(/\/+$|\/rest\/v1\/?$/, '');
+
+    // Supabase'den verileri çek
     const supabaseRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/transactions?date=gte.${oneWeekAgo}&select=*`,
+      `${SUPABASE_URL}/rest/v1/transactions?select=*`,
       {
         headers: {
           'apikey': SUPABASE_KEY,
@@ -20,16 +24,32 @@ export default async function handler(req, res) {
 
     const data = await supabaseRes.json();
 
+    if (!supabaseRes.ok || !Array.isArray(data)) {
+      return res.status(500).json({ 
+        error: "Supabase veri çekme hatası", 
+        details: data 
+      });
+    }
+
     let totalIncome = 0;
     let totalExpense = 0;
 
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        const amt = parseFloat(item.amount) || 0;
-        if (item.type === 'income') totalIncome += amt;
-        else totalExpense += amt;
-      });
-    }
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    data.forEach(item => {
+      const amt = Number(item.amount) || 0;
+      const rawDate = item.date ? new Date(item.date) : new Date();
+
+      // Son 7 gün içindeki veya geçerli tarihli verileri hesapla
+      if (isNaN(rawDate.getTime()) || rawDate >= sevenDaysAgo) {
+        if (item.type === 'income') {
+          totalIncome += amt;
+        } else {
+          totalExpense += amt;
+        }
+      }
+    });
 
     const netBalance = totalIncome - totalExpense;
 
@@ -65,7 +85,6 @@ export default async function handler(req, res) {
       </div>
     `;
 
-    // Resend ile Mail Gönder
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -81,7 +100,13 @@ export default async function handler(req, res) {
     });
 
     const resendResult = await resendRes.json();
-    return res.status(200).json({ success: true, resendResult });
+    return res.status(200).json({ 
+      success: true, 
+      fetchedRowsCount: data.length, 
+      totalIncome, 
+      totalExpense, 
+      resendResult 
+    });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
